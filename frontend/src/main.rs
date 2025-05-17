@@ -1,33 +1,19 @@
-use axum::Router;
-use axum::routing::{get, post};
-use axum::response::Html;
+use routes::build_app;
+use std::env;
 
-async fn index() -> Html<String> {
-    Html(r#"
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-        </head>
-        <body>
-            <button hx-post="/clicked" hx-swap="outerHTML">
-                Click Me
-            </button>
-        </body>
-        </html>
-    "#.to_string())
-}
-
-async fn clicked() -> Html<String> {
-    Html(r#"<p>✅ You clicked the button!</p>"#.to_string())
-}
+mod components;
+mod routes;
 
 #[tokio::main]
 async fn main() {
-    // dotenv::from_filename("../.env").ok();
-    let app = Router::new()
-        .route("/", get(index))
-        .route("/clicked", post(clicked));    let listener = tokio::net::TcpListener::bind("0.0.0.0:5179").await.unwrap();
-    println!("Listening on 0.0.0.0:5179");
+    dotenv::from_filename("../.env").ok();
+
+    let app = build_app();
+
+    let port = env::var("FRONTEND_PORT").expect("FRONTEND_PORT must be set");
+    let addr = format!("0.0.0.0:{}", port);
+    let listener = tokio::net::TcpListener::bind(addr.clone()).await.unwrap();
+
+    println!("Frontend listening on {}", addr);
     axum::serve(listener, app).await.unwrap();
 }

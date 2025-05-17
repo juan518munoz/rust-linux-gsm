@@ -1,7 +1,7 @@
 use action::ServerAction;
 use axum::Router;
 use axum::extract::Path;
-use axum::routing::get;
+use axum::routing::post;
 use chrono::Local;
 use command::{build_command, run_command};
 use game_server::GameServer;
@@ -34,7 +34,7 @@ async fn server_action(Path((server_name, action)): Path<(String, String)>) -> S
 #[tokio::main]
 async fn main() {
     dotenv::from_filename("../.env").ok();
-    let app = Router::new().route("/{server_name}/{endpoint}", get(server_action));
+    let app = Router::new().route("/{server_name}/{endpoint}", post(server_action));
     let listener = tokio::net::TcpListener::bind("0.0.0.0:5180").await.unwrap();
     println!("Listening on 0.0.0.0:5180");
     axum::serve(listener, app).await.unwrap();
