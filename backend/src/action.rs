@@ -6,6 +6,7 @@ const START: &str = "start";
 const STOP: &str = "stop";
 
 #[derive(Debug, EnumIter)]
+/// Actions to run on a game server
 pub enum ServerAction {
     Start,
     Stop,

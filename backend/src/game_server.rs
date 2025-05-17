@@ -23,6 +23,7 @@ static L4D2_SERVICE_NAME: Lazy<String> =
     Lazy::new(|| env::var("L4D2_SERVICE_NAME").expect("L4D2_SERVICE_NAME must be set in .env"));
 
 #[derive(Debug, EnumIter)]
+/// Available game servers to run actions on
 pub(crate) enum GameServer {
     Minecraft,
     Gmod,
