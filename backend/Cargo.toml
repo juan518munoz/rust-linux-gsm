@@ -1,0 +1,11 @@
+[package]
+name = "server-launcher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.4"
+chrono = "0.4.41"
+strum = "0.27.1"
+strum_macros = "0.27.1"
+tokio = { version = "1.45.0", features = ["full"]}
