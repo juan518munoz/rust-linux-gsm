@@ -1,10 +1,13 @@
+use action::ServerAction;
 use axum::Router;
 use axum::extract::Path;
 use axum::routing::get;
 use chrono::Local;
-use game_server::{GameServer, ServerAction, build_command, run_command};
-use strum::IntoEnumIterator;
+use command::{build_command, run_command};
+use game_server::GameServer;
 
+pub(crate) mod action;
+mod command;
 mod game_server;
 
 fn log_call(endpoint: &str) {
@@ -25,40 +28,14 @@ async fn server_action(Path((server_name, action)): Path<(String, String)>) -> S
     };
 
     let command = build_command(game_server, action);
-    let output = run_command(command).await;
-    output
-}
-
-async fn help() -> String {
-    log_call("help");
-    let mut output = String::new();
-
-    output.push_str("Available Servers:\n");
-    for game_server in GameServer::iter() {
-        output.push_str(&format!("- {}\n", game_server));
-    }
-    output.push_str("\n");
-
-    output.push_str("Available Actions:\n");
-    for action in ServerAction::iter() {
-        output.push_str(&format!("- {}\n", action));
-    }
-    output.push_str("\n");
-
-    output.push_str("Sample request:\n");
-    output.push_str(&format!(
-        "/{}/{}\n",
-        GameServer::PZomboid,
-        ServerAction::Monitor
-    ));
-    output
+    run_command(command).await
 }
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new()
-        .route("/{server_name}/{endpoint}", get(server_action))
-        .route("/", get(help));
+    dotenv::from_filename("../.env").ok();
+    let app = Router::new().route("/{server_name}/{endpoint}", get(server_action));
     let listener = tokio::net::TcpListener::bind("0.0.0.0:5180").await.unwrap();
+    println!("Listening on 0.0.0.0:5180");
     axum::serve(listener, app).await.unwrap();
 }

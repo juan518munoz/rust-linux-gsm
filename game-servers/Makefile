@@ -1,3 +1,5 @@
+.PHONY: start stop
+
 ENV_FILE="../.env"
 
 # make start SERVICE=mc-game-server
