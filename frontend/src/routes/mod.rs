@@ -27,9 +27,10 @@ async fn index() -> Html<String> {
             <h1 class="text-center mb-4">Simple lgsm</h1>
             {server_list}
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
-            TODO:
-            <li>UPDATE RUNNING COLUMN WHEN SERVER STARTS OR STOPS</li>
-            <li>ADD API TOKEN FIELD FOR REQUESTS</li>
+            <div class="mt-3>
+                <label for="api_token" class="form-label">API Token</label>
+                <input type="text" class="form-control bg-dark text-light" id="api_token" aria-label="API Token" aria-describedby="apiToken" name="api_token">
+            </div>
         </body>
         </html>
         "#,

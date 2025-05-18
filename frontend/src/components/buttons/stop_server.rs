@@ -8,6 +8,7 @@ pub fn stop_server_button(server: String) -> Component {
             hx-post="/stop_server_clicked"
             hx-swap="outerHTML"
             hx-vals='{{ "server": "{server}" }}'
+            hx-include="[name='api_token']"
             onclick="this.innerText = '...'; this.disabled = true;">
             stop
         </button>

@@ -1,30 +1,25 @@
+use serde::Deserialize;
+
 use crate::components::buttons::{start_server_button, stop_server_button};
 
-struct ServerData {
-    pub name: String,
+#[derive(Deserialize)]
+pub struct ServerStatus {
+    pub server_name: String,
     pub endpoint: String,
     pub running: bool,
 }
 
-async fn get_servers() -> Vec<ServerData> {
-    // TODO: ask backend
-    vec![
-        ServerData {
-            name: "mcserver".into(),
-            endpoint: "http://foo.bar:1234".into(),
-            running: true,
-        },
-        ServerData {
-            name: "gmod".into(),
-            endpoint: "http://foo.bar:1234".into(),
-            running: true,
-        },
-        ServerData {
-            name: "l4d2server".into(),
-            endpoint: "http://foo.bar:1234".into(),
-            running: false,
-        },
-    ]
+async fn get_servers() -> Vec<ServerStatus> {
+    let backend_port = std::env::var("BACKEND_PORT").expect("BACKEND_PORT must be set");
+    let backend_endpoint = format!("http://localhost:{}/status", backend_port);
+    let response = reqwest::get(backend_endpoint)
+        .await
+        .expect("Failed to fetch server status");
+    let servers = response
+        .json::<Vec<ServerStatus>>()
+        .await
+        .expect("Failed to parse server status");
+    servers
 }
 
 async fn server_rows() -> String {
@@ -37,19 +32,14 @@ async fn server_rows() -> String {
             <tr>
                 <td>{server_name}</td>
                 <td>{server_endpoint}</td>
-                <td>{server_status}</td>
                 <td>{server_button}</td>
             </tr>
             "#,
-            server_name = server.name,
+            server_name = server.server_name,
             server_endpoint = server.endpoint,
-            server_status = match server.running {
-                true => "YES",
-                false => "NO",
-            },
             server_button = match server.running {
-                true => stop_server_button(server.name.clone()),
-                false => start_server_button(server.name.clone()),
+                true => stop_server_button(server.server_name.clone()),
+                false => start_server_button(server.server_name.clone()),
             }
         ));
     }
@@ -65,7 +55,6 @@ pub async fn server_list() -> String {
                 <tr>
                     <th>Server</th>
                     <th>Endpoint</th>
-                    <th>Running</th>
                     <th>Action</th>
                 </tr>
             </thead>

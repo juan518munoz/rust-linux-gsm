@@ -8,6 +8,7 @@ pub fn start_server_button(server: String) -> Component {
             hx-post="/start_server_clicked"
             hx-swap="outerHTML"
             hx-vals='{{ "server": "{server}" }}'
+            hx-include="[name='api_token']"
             onclick="this.innerText = '...'; this.disabled = true;">
             start
         </button>
