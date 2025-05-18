@@ -36,6 +36,6 @@ async fn main() {
     dotenv::from_filename("../.env").ok();
     let app = Router::new().route("/{server_name}/{endpoint}", post(server_action));
     let listener = tokio::net::TcpListener::bind("0.0.0.0:5180").await.unwrap();
-    println!("Listening on 0.0.0.0:5180");
+    println!("Backend listening on 0.0.0.0:5180");
     axum::serve(listener, app).await.unwrap();
 }

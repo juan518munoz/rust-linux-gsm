@@ -10,6 +10,11 @@ pub use stop_server::stop_server_clicked;
 
 use crate::components::tables::server_list;
 
+pub(crate) fn backend_url() -> String {
+    let backend_port = std::env::var("BACKEND_PORT").unwrap_or_else(|_| "8080".to_string());
+    format!("http://0.0.0.0:{}", backend_port)
+}
+
 async fn index() -> Html<String> {
     let html = format!(
         r#"

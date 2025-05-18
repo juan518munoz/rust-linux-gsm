@@ -1,7 +1,7 @@
 use axum::{Form, response::Html};
 use serde::Deserialize;
 
-use crate::components::buttons::stop_server_button;
+use crate::{components::buttons::stop_server_button, routes::backend_url};
 
 #[derive(Deserialize)]
 pub struct StartRequest {
@@ -13,7 +13,7 @@ pub async fn start_server_clicked(Form(payload): Form<StartRequest>) -> Html<Str
 
     let client = reqwest::Client::new();
     let response = client
-        .post(format!("http://0.0.0.0:5180/{}/start", payload.server))
+        .post(format!("{}/{}/start", backend_url(), payload.server))
         .send()
         .await
         .unwrap();
