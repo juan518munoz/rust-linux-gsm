@@ -22,7 +22,7 @@ pub async fn stop_server_clicked(Form(payload): Form<StopRequest>) -> Html<Strin
     let response = match client
         .post(format!("http://{}/{}/stop", backend_url(), payload.server))
         .header("Authorization", format!("Bearer {}", payload.api_token))
-        .timeout(Duration::from_secs(5))
+        .timeout(Duration::from_secs(15))
         .send()
         .await
     {
@@ -33,7 +33,7 @@ pub async fn stop_server_clicked(Form(payload): Form<StopRequest>) -> Html<Strin
                 r#"
                     {}
                     <script>
-                        alert("Error: {}", err);
+                        alert("Error: {}");
                     </script>
                     "#,
                 err,

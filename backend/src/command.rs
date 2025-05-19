@@ -33,6 +33,7 @@ pub(crate) fn build_command(game_server: GameServer, action: ServerAction) -> Co
 }
 
 pub(crate) async fn run_command(mut command: Command) -> String {
+    log::debug!("Running command: {:?}", command);
     let mut child = match command.spawn() {
         Ok(child) => child,
         Err(e) => {
