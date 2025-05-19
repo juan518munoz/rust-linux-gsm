@@ -44,7 +44,7 @@ pub async fn stop_server_clicked(Form(payload): Form<StopRequest>) -> Html<Strin
 
     match response.status() {
         StatusCode::OK => {
-            log::debug!("Server started successfully");
+            log::debug!("Server stopped successfully");
             Html(start_server_button(payload.server.clone()))
         }
         _ => {
