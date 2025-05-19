@@ -74,7 +74,14 @@ impl GameServer {
 
     /// Returns the endpoint for the game server.
     pub(crate) fn endpoint(&self) -> String {
-        let public_ip = env::var("PUBLIC_IP").expect("PUBLIC_IP must be set in .env");
+        let public_ip = match env::var("PUBLIC_IP") {
+            Ok(ip) => ip,
+            Err(_) => {
+                log::error!("PUBLIC_IP not set in .env");
+                return "PUBLIC_IP not set".to_string();
+            }
+        };
+
         let port = match self {
             GameServer::Minecraft => MCSERVER_PORT.to_string(),
             GameServer::Gmod => GMOD_PORT.to_string(),

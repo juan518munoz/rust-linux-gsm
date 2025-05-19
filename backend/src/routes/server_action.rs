@@ -16,20 +16,39 @@ pub async fn server_action(
     Path((server_name, action)): Path<(String, String)>,
     TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
 ) -> impl IntoResponse {
-    let expected_bearer = env::var("AUTH_TOKEN").expect("AUTH_TOKEN must be set in .env");
+    log::info!(
+        "Received request for server: {} with action: {}",
+        server_name,
+        action
+    );
+
+    let expected_bearer = match env::var("AUTH_TOKEN") {
+        Ok(token) => token,
+        Err(_) => {
+            log::error!("AUTH_TOKEN not set in .env");
+            return (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error\n");
+        }
+    };
 
     if bearer.token() != expected_bearer {
+        log::debug!("Unauthorized: Invalid API token");
         return (StatusCode::UNAUTHORIZED, "Invalid Token\n");
     }
 
-    let game_server = match GameServer::try_from(server_name) {
+    let game_server = match GameServer::try_from(server_name.clone()) {
         Ok(server) => server,
-        Err(_) => return (StatusCode::BAD_REQUEST, "Invalid Server\n"),
+        Err(_) => {
+            log::error!("Failed to parse game server name: {}", server_name);
+            return (StatusCode::BAD_REQUEST, "Invalid Server\n");
+        }
     };
 
-    let action = match ServerAction::try_from(action) {
+    let action = match ServerAction::try_from(action.clone()) {
         Ok(act) => act,
-        Err(_) => return (StatusCode::BAD_REQUEST, "Invalid Action\n"),
+        Err(_) => {
+            log::error!("Failed to parse action: {}", action);
+            return (StatusCode::BAD_REQUEST, "Invalid Action\n");
+        }
     };
 
     let command = build_command(game_server, action);

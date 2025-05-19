@@ -1,3 +1,5 @@
+use std::env;
+
 use serde::Deserialize;
 
 use crate::components::buttons::{start_server_button, stop_server_button};
@@ -10,16 +12,30 @@ pub struct ServerStatus {
 }
 
 async fn get_servers() -> Vec<ServerStatus> {
-    let backend_port = std::env::var("BACKEND_PORT").expect("BACKEND_PORT must be set");
-    let backend_endpoint = format!("http://localhost:{}/status", backend_port);
-    let response = reqwest::get(backend_endpoint)
-        .await
-        .expect("Failed to fetch server status");
-    let servers = response
-        .json::<Vec<ServerStatus>>()
-        .await
-        .expect("Failed to parse server status");
-    servers
+    let backend_port = match env::var("BACKEND_PORT") {
+        Ok(port) => port,
+        Err(_) => {
+            log::error!("BACKEND_PORT not set");
+            return Vec::new();
+        }
+    };
+
+    let backend_endpoint = format!("http://0.0.0.0:{}/status", backend_port);
+    let response = match reqwest::get(backend_endpoint).await {
+        Ok(response) => response,
+        Err(err) => {
+            log::error!("Error fetching server status: {}", err);
+            return Vec::new();
+        }
+    };
+
+    match response.json::<Vec<ServerStatus>>().await {
+        Ok(servers) => servers,
+        Err(err) => {
+            log::error!("Error parsing server status: {}", err);
+            Vec::new()
+        }
+    }
 }
 
 async fn server_rows() -> String {

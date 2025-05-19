@@ -11,6 +11,7 @@ pub struct ServerStatus {
 }
 
 pub async fn list_servers() -> Json<Vec<ServerStatus>> {
+    log::info!("Received request for server status");
     let mut response = Vec::new();
     for server in GameServer::iter() {
         response.push(ServerStatus {

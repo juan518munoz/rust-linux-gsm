@@ -1,3 +1,5 @@
+use std::env;
+
 use axum::Router;
 use axum::response::Html;
 use axum::routing::{get, post};
@@ -8,11 +10,12 @@ mod stop_server;
 pub use start_server::start_server_clicked;
 pub use stop_server::stop_server_clicked;
 
+use crate::BACKEND_URL;
 use crate::components::tables::server_list;
 
 pub(crate) fn backend_url() -> String {
-    let backend_port = std::env::var("BACKEND_PORT").unwrap_or_else(|_| "8080".to_string());
-    format!("http://0.0.0.0:{}", backend_port)
+    let backend_port = env::var("BACKEND_PORT").unwrap_or_else(|_| "8080".to_string());
+    format!("{}:{}", BACKEND_URL, backend_port)
 }
 
 async fn index() -> Html<String> {
@@ -41,10 +44,8 @@ async fn index() -> Html<String> {
 }
 
 pub fn build_app() -> Router {
-    let app = Router::new()
+    Router::new()
         .route("/", get(index))
         .route("/start_server_clicked", post(start_server_clicked))
-        .route("/stop_server_clicked", post(stop_server_clicked));
-
-    app
+        .route("/stop_server_clicked", post(stop_server_clicked))
 }

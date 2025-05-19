@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use axum::{Form, response::Html};
 use reqwest::StatusCode;
 use serde::Deserialize;
@@ -14,24 +16,48 @@ pub struct StopRequest {
 }
 
 pub async fn stop_server_clicked(Form(payload): Form<StopRequest>) -> Html<String> {
-    println!("Stop clicked for server: {}", payload.server);
+    log::info!("Stop clicked for server: {}", payload.server);
 
     let client = reqwest::Client::new();
-    let response = client
-        .post(format!("{}/{}/stop", backend_url(), payload.server))
+    let response = match client
+        .post(format!("http://{}/{}/stop", backend_url(), payload.server))
         .header("Authorization", format!("Bearer {}", payload.api_token))
+        .timeout(Duration::from_secs(5))
         .send()
         .await
-        .unwrap();
+    {
+        Ok(response) => response,
+        Err(err) => {
+            log::error!("Error sending request: {}", err);
+            return Html(format!(
+                r#"
+                    {}
+                    <script>
+                        alert("Error: {}", err);
+                    </script>
+                    "#,
+                err,
+                stop_server_button(payload.server.clone())
+            ));
+        }
+    };
 
     match response.status() {
         StatusCode::OK => {
-            println!("Server started successfully");
+            log::debug!("Server started successfully");
             Html(start_server_button(payload.server.clone()))
         }
         _ => {
-            println!("Unauthorized: Invalid API token");
-            Html(stop_server_button(payload.server.clone()))
+            log::debug!("Unauthorized: Invalid API token");
+            Html(format!(
+                r#"
+                {}
+                <script>
+                    alert("Unauthorized: Invalid API token");
+                </script>
+                "#,
+                stop_server_button(payload.server.clone())
+            ))
         }
     }
 }

@@ -1,18 +1,18 @@
-.PHONY: front back all
+.PHONY: front back all kill
 
 # Load .env variables
 include .env
 export $(shell sed 's/=.*//' .env)
 
 front:
-	cargo run --manifest-path=frontend/Cargo.toml
+	RUST_LOG=$(RUST_LOG) cargo run --manifest-path=frontend/Cargo.toml
 
 back:
-	cargo run --manifest-path=backend/Cargo.toml
+	RUST_LOG=$(RUST_LOG) cargo run --manifest-path=backend/Cargo.toml
 
 all:
-	cargo run --manifest-path=frontend/Cargo.toml & \
-	cargo run --manifest-path=backend/Cargo.toml & \
+	RUST_LOG=$(RUST_LOG) cargo run --manifest-path=frontend/Cargo.toml & \
+	RUST_LOG=$(RUST_LOG) cargo run --manifest-path=backend/Cargo.toml & \
 	wait
 
 kill:
@@ -20,3 +20,7 @@ kill:
 	@lsof -ti tcp:$(FRONTEND_PORT) | xargs -r kill
 	@echo "Killing process on port $(BACKEND_PORT)..."
 	@lsof -ti tcp:$(BACKEND_PORT) | xargs -r kill
+
+fmt:
+	cargo fmt --all --manifest-path=frontend/Cargo.toml
+	cargo fmt --all --manifest-path=backend/Cargo.toml

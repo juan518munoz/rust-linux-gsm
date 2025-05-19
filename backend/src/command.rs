@@ -31,9 +31,21 @@ pub(crate) fn build_command(game_server: GameServer, action: ServerAction) -> Co
 }
 
 pub(crate) async fn run_command(mut command: Command) -> String {
-    let mut child = command.spawn().expect("Failed to start command");
+    let mut child = match command.spawn() {
+        Ok(child) => child,
+        Err(e) => {
+            let error_message = format!("Failed to spawn command: {}", e);
+            log::error!("{}", error_message);
+            return error_message;
+        }
+    };
+
     match child.wait() {
         Ok(_) => "Command ran succesfully".to_string(),
-        Err(e) => format!("Failed to run command: {}", e),
+        Err(e) => {
+            let error_message = format!("Failed to spawn command: {}", e);
+            log::error!("{}", error_message);
+            error_message
+        }
     }
 }

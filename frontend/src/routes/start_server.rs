@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use axum::{Form, response::Html};
 use reqwest::StatusCode;
 use serde::Deserialize;
@@ -14,20 +16,40 @@ pub struct StartRequest {
 }
 
 pub async fn start_server_clicked(Form(payload): Form<StartRequest>) -> Html<String> {
-    println!("Start clicked for server: {}", payload.server);
+    log::info!("Start clicked for server: {}", payload.server);
 
     let client = reqwest::Client::new();
-    let response = client
-        .post(format!("{}/{}/start", backend_url(), payload.server))
+    let response = match client
+        .post(format!("http://{}/{}/start", backend_url(), payload.server))
         .header("Authorization", format!("Bearer {}", payload.api_token))
+        .timeout(Duration::from_secs(5))
         .send()
         .await
-        .unwrap();
+    {
+        Ok(response) => response,
+        Err(err) => {
+            log::error!("Error sending request: {}", err);
+            return Html(format!(
+                r#"
+                    {}
+                    <script>
+                        alert("Error: {}", err);
+                    </script>
+                    "#,
+                err,
+                start_server_button(payload.server.clone()),
+            ));
+        }
+    };
 
     match response.status() {
-        StatusCode::OK => Html(stop_server_button(payload.server.clone())),
+        StatusCode::OK => {
+            log::debug!("Server started successfully");
+            Html(stop_server_button(payload.server.clone()))
+        }
         _ => {
-            let html = format!(
+            log::debug!("Unauthorized: Invalid API token");
+            Html(format!(
                 r#"
                 {}
                 <script>
@@ -35,9 +57,7 @@ pub async fn start_server_clicked(Form(payload): Form<StartRequest>) -> Html<Str
                 </script>
                 "#,
                 start_server_button(payload.server.clone())
-            );
-
-            Html(html)
+            ))
         }
     }
 }

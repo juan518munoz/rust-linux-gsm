@@ -13,6 +13,8 @@ mod routes;
 #[tokio::main]
 async fn main() {
     dotenv::from_filename("../.env").ok();
+    env_logger::init();
+    log::info!("Starting backend server");
 
     let app = Router::new()
         .route("/{server_name}/{endpoint}", post(server_action))
@@ -21,6 +23,6 @@ async fn main() {
     let port = env::var("BACKEND_PORT").expect("BACKEND_PORT must be set");
     let addr = format!("0.0.0.0:{}", port);
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    println!("Backend listening on {}", addr);
+    log::info!("Backend listening on {}", addr);
     axum::serve(listener, app).await.unwrap();
 }
