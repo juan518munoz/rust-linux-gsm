@@ -13,7 +13,6 @@ back:
 all:
 	RUST_LOG=$(RUST_LOG) cargo run --manifest-path=frontend/Cargo.toml & \
 	RUST_LOG=$(RUST_LOG) cargo run --manifest-path=backend/Cargo.toml & \
-	wait
 
 kill:
 	@echo "Killing process on port $(FRONTEND_PORT)..."
