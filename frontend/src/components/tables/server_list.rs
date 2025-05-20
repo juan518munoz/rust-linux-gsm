@@ -8,6 +8,7 @@ use crate::components::buttons::{start_server_button, stop_server_button};
 pub struct ServerStatus {
     pub server_name: String,
     pub endpoint: String,
+    pub players: Vec<String>,
     pub running: bool,
 }
 
@@ -38,6 +39,18 @@ async fn get_servers() -> Vec<ServerStatus> {
     }
 }
 
+fn players_list(players: Vec<String>) -> String {
+    if players.is_empty() {
+        return "".to_string();
+    }
+
+    let mut player_list = String::new();
+    for player in players {
+        player_list.push_str(&format!("<p>{}</p>", player));
+    }
+    player_list
+}
+
 async fn server_rows() -> String {
     let servers = get_servers().await;
 
@@ -48,11 +61,13 @@ async fn server_rows() -> String {
             <tr>
                 <td>{server_name}</td>
                 <td>{server_endpoint}</td>
+                <td>{players_list}</td>
                 <td>{server_button}</td>
             </tr>
             "#,
             server_name = server.server_name,
             server_endpoint = server.endpoint,
+            players_list = players_list(server.players),
             server_button = match server.running {
                 true => stop_server_button(server.server_name.clone()),
                 false => start_server_button(server.server_name.clone()),
@@ -71,6 +86,7 @@ pub async fn server_list() -> String {
                 <tr>
                     <th>Server</th>
                     <th>Endpoint</th>
+                    <th>Players</th>
                     <th>Action</th>
                 </tr>
             </thead>

@@ -107,4 +107,55 @@ impl GameServer {
             Err(_) => false,
         }
     }
+
+    /// Returns players on the server.
+    pub(crate) fn get_online_players(&self) -> Vec<String> {
+        // TODO: Backend might not be running on the same machine as the game server
+        let address = &"0.0.0.0".parse().unwrap();
+        match self {
+            GameServer::Minecraft => {
+                match gamedig::games::minecraft::query(
+                    address,
+                    Some(MCSERVER_PORT.parse().unwrap()),
+                ) {
+                    Ok(status) => status
+                        .players
+                        .unwrap_or_default()
+                        .iter()
+                        .map(|p| p.name.clone())
+                        .collect(),
+                    Err(e) => {
+                        log::error!("Error querying Minecraft server: {}", e);
+                        vec![]
+                    }
+                }
+            }
+            GameServer::Gmod => {
+                match gamedig::games::garrysmod::query(address, Some(GMOD_PORT.parse().unwrap())) {
+                    Ok(status) => status
+                        .players_details
+                        .iter()
+                        .map(|p| p.name.clone())
+                        .collect(),
+                    Err(e) => {
+                        log::error!("Error querying Garry's Mod server: {}", e);
+                        vec![]
+                    }
+                }
+            }
+            GameServer::L4d2 => {
+                match gamedig::games::l4d2::query(address, Some(L4D2_PORT.parse().unwrap())) {
+                    Ok(status) => status
+                        .players_details
+                        .iter()
+                        .map(|p| p.name.clone())
+                        .collect(),
+                    Err(e) => {
+                        log::error!("Error querying Left 4 Dead 2 server: {}", e);
+                        vec![]
+                    }
+                }
+            }
+        }
+    }
 }

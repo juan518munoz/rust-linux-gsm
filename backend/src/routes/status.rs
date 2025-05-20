@@ -7,6 +7,7 @@ use strum::IntoEnumIterator;
 pub struct ServerStatus {
     pub server_name: String,
     pub endpoint: String,
+    pub players: Vec<String>,
     pub running: bool,
 }
 
@@ -17,6 +18,10 @@ pub async fn list_servers() -> Json<Vec<ServerStatus>> {
         response.push(ServerStatus {
             server_name: server.to_string(),
             endpoint: server.endpoint(),
+            players: match server.is_running() {
+                true => server.get_online_players(),
+                false => vec![],
+            },
             running: server.is_running(),
         });
     }
